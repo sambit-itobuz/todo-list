@@ -1,34 +1,40 @@
-let taskList = [];
 const list = document.getElementById("list");
+const inputTask = document.getElementById("task");
+const localList = localStorage.getItem("todo");
+const clear = document.getElementById("clear");
+let taskList = [];
 
-function checkEnter(e) {
-  if (e.key == "Enter") addTask();
+if (localList) {
+  taskList = JSON.parse(localList);
+  showAll();
+} else {
+  localStorage.setItem("todo", JSON.stringify(taskList));
 }
 
-function createButtonDone() {
-  const btnDone = document.createElement("button");
-  btnDone.setAttribute(
+function createCompleteBtn() {
+  const completeBtn = document.createElement("button");
+  completeBtn.setAttribute(
     "class",
     "btn btn-outline-success list-item-button button-done"
   );
-  const imgDone = document.createElement("img");
-  imgDone.src = "./checkmark.png";
-  btnDone.appendChild(imgDone);
-  btnDone.setAttribute("onclick", "completeFunc(this)");
-  return btnDone;
+  const tickImg = document.createElement("img");
+  tickImg.src = "./image/tickmark.png";
+  completeBtn.appendChild(tickImg);
+  completeBtn.setAttribute("onclick", "completeFunc(this)");
+  return completeBtn;
 }
 
-function createButtonDelete() {
-  const btnDelete = document.createElement("button");
-  btnDelete.setAttribute(
+function createDeleteBtn() {
+  const deleteBtn = document.createElement("button");
+  deleteBtn.setAttribute(
     "class",
     "btn btn-outline-danger list-item-button button-delete"
   );
-  const imgDelete = document.createElement("img");
-  imgDelete.src = "./bin.png";
-  btnDelete.appendChild(imgDelete);
-  btnDelete.setAttribute("onclick", "deleteFunc(this)");
-  return btnDelete;
+  const deleteImg = document.createElement("img");
+  deleteImg.src = "./image/bin.png";
+  deleteBtn.appendChild(deleteImg);
+  deleteBtn.setAttribute("onclick", "deleteFunc(this)");
+  return deleteBtn;
 }
 
 function renderList(listTask) {
@@ -38,20 +44,20 @@ function renderList(listTask) {
   if (listTask.complete) {
     para.classList.add("text-decoration-line-through");
   }
-  const buttonDone = createButtonDone();
-  const buttonDelete = createButtonDelete();
-  const buttonDiv = document.createElement("div");
+  const completeBtn = createCompleteBtn();
+  const deleteBtn = createDeleteBtn();
+  const actionWrapper = document.createElement("div");
   listItem.appendChild(para);
-  buttonDiv.appendChild(buttonDone);
-  buttonDiv.appendChild(buttonDelete);
-  buttonDiv.classList.add("d-flex")
-  listItem.appendChild(buttonDiv);
+  actionWrapper.appendChild(completeBtn);
+  actionWrapper.appendChild(deleteBtn);
+  actionWrapper.classList.add("d-flex");
+  listItem.appendChild(actionWrapper);
   listItem.setAttribute("class", "task-list-item");
   list.appendChild(listItem);
 }
 
 function addTask() {
-  const task = document.getElementById("task").value.trim();
+  const task = inputTask.value.trim();
   if (task === "") {
     window.alert("Empty task");
   } else if (taskList.findIndex((element) => element.value === task) !== -1) {
@@ -60,8 +66,9 @@ function addTask() {
     const newTask = { value: task, complete: false };
     taskList.push(newTask);
     renderList(newTask);
+    localStorage.setItem("todo", JSON.stringify(taskList));
   }
-  document.getElementById("task").value = "";
+  inputTask.value = "";
 }
 
 function showAll() {
@@ -71,70 +78,71 @@ function showAll() {
   });
 }
 
-function checkActive(listTask) {
-  if (!listTask.complete) {
-    renderList(listTask);
-  }
-}
-
-function checkComplete(listTask) {
-  if (listTask.complete) {
-    renderList(listTask);
-  }
-}
-
 function showActive() {
   list.innerHTML = "";
   taskList.forEach((listTask) => {
-    checkActive(listTask);
+    if (!listTask.complete) {
+      renderList(listTask);
+    }
   });
 }
 
 function showCompleted() {
   list.innerHTML = "";
   taskList.forEach((listTask) => {
-    checkComplete(listTask);
+    if (listTask.complete) {
+      renderList(listTask);
+    }
   });
-}
-
-function taskIsActive(ele) {
-  return ele;
 }
 
 function clearCompleted() {
   taskList = taskList.filter((element) => !element.complete);
+  localStorage.setItem("todo", JSON.stringify(taskList));
   showAll();
 }
 
-function toggleStrike(ele) {
-  const text = ele.parentNode.parentNode.querySelector("p");
+function toggleStrike(element) {
+  const text = element.parentNode.parentNode.querySelector("p");
   text.classList.toggle("text-decoration-line-through");
 }
 
-function completeFunc(ele) {
-  toggleStrike(ele);
-  const taskName = ele.parentNode.parentNode.querySelector("p").textContent;
-  const index = taskList.findIndex((element) => element.value === taskName);
+function completeFunc(element) {
+  toggleStrike(element);
+  const taskName = element.parentNode.parentNode.querySelector("p").textContent;
+  const index = taskList.findIndex((item) => item.value === taskName);
   taskList[index].complete = !taskList[index].complete;
+  localStorage.setItem("todo", JSON.stringify(taskList));
 }
 
-function deleteFunc(ele) {
-  const taskName = ele.parentNode.parentNode.textContent;
+function deleteFunc(element) {
+  const taskName = element.parentNode.parentNode.textContent;
   const deleteConfirm = window.confirm(
     "Do youn want to delete the task " + taskName + " ?"
   );
   if (deleteConfirm) {
-    const index = taskList.findIndex((element) => element.value === taskName);
+    const index = taskList.findIndex((item) => item.value === taskName);
     taskList.splice(index, 1);
-    ele.parentElement.parentElement.remove();
+    localStorage.setItem("todo", JSON.stringify(taskList));
+    element.parentElement.parentElement.remove();
   }
 }
 
 document.getElementById("add-btn").addEventListener("click", addTask);
-document.getElementById("task").addEventListener("keypress", checkEnter);
+document.getElementById("task").addEventListener("keypress", (element) => {
+  if (element.key === "Enter") addTask();
+});
 document.getElementById("all-btn").addEventListener("click", showAll);
 document.getElementById("active-btn").addEventListener("click", showActive);
 document
   .getElementById("completed-btn")
   .addEventListener("click", showCompleted);
 document.getElementById("clear-btn").addEventListener("click", clearCompleted);
+document.getElementById("clear").addEventListener("click", () => {
+  const clearConfirm = window.confirm("Do you want to clear localStorage?");
+  if (clearConfirm) {
+    localStorage.clear();
+    taskList.splice(0);
+    showAll();
+  }
+});
