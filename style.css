@@ -10,19 +10,37 @@
 }
 .main .task-list {
   list-style-type: none;
+  padding: 0;
+  max-height: 70vh;
+  overflow: scroll;
+}
+.main .task-list::-webkit-scrollbar {
+  display: none;
 }
 .main .task-list-item {
   font-size: 20px;
-  background-color: rgb(137, 255, 255);
+  background-color: rgb(254, 218, 136);
   border-radius: 5px;
   box-shadow: 1px 1px 1px 1px gray;
   width: 60%;
   margin: 10px auto;
   padding: 10px 25px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 .main .task-list-item .list-item-button {
-  margin: auto 20px;
+  margin: 0 5px;
+  padding: 6px;
 }
 .main .task-list-item .list-item-button img {
-  width: 30px;
+  width: 15px;
+}
+.main .task-list-item p {
+  margin: auto 0;
+  max-width: 60%;
+  overflow-x: scroll;
+}
+.main .task-list-item p::-webkit-scrollbar {
+  display: none;
 }/*# sourceMappingURL=style.css.map */
